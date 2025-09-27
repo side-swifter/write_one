@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pages/home_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/about_page.dart';
+import 'pages/login_page.dart';
+import 'pages/signup_page.dart';
+import 'pages/email_verification_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Supabase
+  await Supabase.initialize(
+    url: 'https://jqoptdeozjqzkfizzngm.supabase.co',
+    anonKey: 'sb_secret_qiHUriBNdzNagk0VnJ2_bg_JMUKW3pB',
+  );
+  
   runApp(const MyApp());
 }
 
@@ -48,6 +60,9 @@ class MyApp extends StatelessWidget {
         '/profile': (context) => const ProfilePage(),
         '/settings': (context) => const SettingsPage(),
         '/about': (context) => const AboutPage(),
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
+        '/email-verification': (context) => const EmailVerificationPage(),
       },
       // Handle unknown routes
       onUnknownRoute: (settings) {

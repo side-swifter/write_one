@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.example.write_one"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36  // Updated for Google Sign-In compatibility
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -24,8 +24,8 @@ android {
         applicationId = "com.example.write_one"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = flutter.minSdkVersion  // Minimum SDK for Firebase
+        targetSdk = 36  // Match compileSdk
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
