@@ -22,10 +22,11 @@ class AboutPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             // App Logo/Icon
-            const Icon(
-              Icons.edit_note,
-              size: 100,
-              color: Colors.blue,
+            Image.asset(
+              'assets/images/Write One Background Removed.png',
+              width: 200,
+              height: 150,
+              fit: BoxFit.contain,
             ),
             const SizedBox(height: 20),
             

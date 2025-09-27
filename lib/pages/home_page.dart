@@ -1,119 +1,147 @@
 import 'package:flutter/material.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Home Page'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              // Show navigation options
-              showModalBottomSheet(
-                context: context,
-                builder: (BuildContext context) {
-                  return Container(
-                    padding: const EdgeInsets.all(16),
+      backgroundColor: const Color(0xFF2D2D2D), // Dark background
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Hand Image positioned at absolute top right of screen
+            Positioned(
+              top: -120, // Move much higher up
+              right: -100, // Position at right edge
+              child: Transform.scale(
+                scale: 2, // Large scale
+                alignment: Alignment.topRight, // Scale from top-right corner
+                child: Image.asset(
+                  'assets/images/Hand.png',
+                  height: 250,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            
+            // Main content
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Spacer(flex: 5), // More space at top
+                  
+                  // Logo, Title, and Subtitle Section
+                  Expanded(
+                    flex: 3, // Less space for text section
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ListTile(
-                          leading: const Icon(Icons.person),
-                          title: const Text('Profile'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, '/profile');
-                          },
+                        // Write One Text - Centered horizontally
+                        Center(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Write One',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 64, // Larger font size
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 2.0, // Add letter spacing
+                              ),
+                            ),
+                          ),
                         ),
-                        ListTile(
-                          leading: const Icon(Icons.settings),
-                          title: const Text('Settings'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, '/settings');
-                          },
-                        ),
-                        ListTile(
-                          leading: const Icon(Icons.info),
-                          title: const Text('About'),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, '/about');
-                          },
+                        const SizedBox(height: 16),
+
+                        // Subtitle - Spanning width
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Authenticity at a Glance.',
+                              style: TextStyle(
+                                fontSize: 22, // Slightly larger
+                                color: Colors.grey[400], // Lighter grey
+                                fontWeight: FontWeight.w300, // Lighter weight
+                                letterSpacing: 1.0,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Icon(
-              Icons.home,
-              size: 80,
-              color: Colors.blue,
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              'Welcome to WriteOne!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+                  ),
+
+                  const Spacer(flex: 2),
+
+                  // Get started button (white)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/profile');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Get started',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Login button (green)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/settings');
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFBEFF00), // Bright green
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  
+                  // Bottom spacing
+                  const SizedBox(height: 40),
+                ],
               ),
-            ),
-            const SizedBox(height: 20),
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            const SizedBox(height: 40),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushNamed(context, '/profile');
-              },
-              icon: const Icon(Icons.person),
-              label: const Text('Go to Profile'),
-            ),
-            const SizedBox(height: 10),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushNamed(context, '/settings');
-              },
-              icon: const Icon(Icons.settings),
-              label: const Text('Go to Settings'),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
