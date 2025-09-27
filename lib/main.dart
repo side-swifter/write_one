@@ -7,6 +7,9 @@ import 'pages/about_page.dart';
 import 'pages/login_page.dart';
 import 'pages/signup_page.dart';
 import 'pages/email_verification_page.dart';
+import 'pages/verification_complete_page.dart';
+import 'pages/camera_permission_page.dart';
+import 'pages/camera_home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,7 +52,6 @@ class MyApp extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           ),
         ),
       ),
@@ -63,6 +65,9 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
         '/email-verification': (context) => const EmailVerificationPage(),
+        '/verification-complete': (context) => const VerificationCompletePage(),
+        '/camera-permission': (context) => const CameraPermissionPage(),
+        '/camera-home': (context) => const CameraHomePage(),
       },
       // Handle unknown routes
       onUnknownRoute: (settings) {

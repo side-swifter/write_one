@@ -43,95 +43,96 @@ class HomePage extends StatelessWidget {
                         // Write One Text - Centered horizontally
                         Center(
                           child: FittedBox(
-                            fit: BoxFit.scaleDown,
                             child: Text(
                               'Write One',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 64, // Larger font size
-                                fontWeight: FontWeight.bold,
+                                fontWeight: FontWeight.w900, // Extra bold
                                 color: Colors.white,
-                                letterSpacing: 2.0, // Add letter spacing
+                                letterSpacing: -2, // Tighter letter spacing
+                                height: 0.9, // Tighter line height
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-
-                        // Subtitle - Spanning width
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              'Authenticity at a Glance.',
-                              style: TextStyle(
-                                fontSize: 22, // Slightly larger
-                                color: Colors.grey[400], // Lighter grey
-                                fontWeight: FontWeight.w300, // Lighter weight
-                                letterSpacing: 1.0,
-                              ),
-                            ),
+                        
+                        const SizedBox(height: 8), // Small gap
+                        
+                        // Subtitle - Centered
+                        const Text(
+                          'Authenticity at a Glance.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
                     ),
                   ),
-
-                  const Spacer(flex: 2),
-
-                  // Get started button (white)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/signup');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Get started',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
                   
-                  const SizedBox(height: 16),
-                  
-                  // Login button (green)
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/login');
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFBEFF00), // Bright green
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  // Buttons Section
+                  Expanded(
+                    flex: 2, // More space for buttons
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Get Started Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/signup');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFBEFF00), // Bright green
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Get started',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                        
+                        const SizedBox(height: 16),
+                        
+                        // Login Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56,
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pushNamed(context, '/login');
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white, width: 1),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text(
+                              'Login',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                   

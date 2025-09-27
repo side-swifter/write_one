@@ -124,34 +124,6 @@ class AuthService {
     }
   }
 
-  // Google Sign In
-  static Future<User?> loginWithGoogle() async {
-    try {
-      print('AuthService: Starting Google Sign-In...');
-      
-      final bool success = await _supabase.auth.signInWithOAuth(
-        OAuthProvider.google,
-        redirectTo: 'io.supabase.writeone://login-callback/',
-      );
-      
-      if (success) {
-        // Wait a moment for the auth state to update
-        await Future.delayed(const Duration(milliseconds: 500));
-        if (currentUser != null) {
-          print('AuthService: Google Sign-In successful for: ${currentUser?.email}');
-          return currentUser;
-        }
-      }
-      
-      throw Exception('Google sign-in failed - no user returned');
-    } on AuthException catch (e) {
-      print('AuthService: Google login error: ${e.message}');
-      throw Exception('Google login failed: ${e.message}');
-    } catch (e) {
-      print('AuthService: General Google login error: $e');
-      throw Exception('Google login failed: ${e.toString()}');
-    }
-  }
 
   // Send Email Verification
   static Future<void> sendEmailVerification() async {

@@ -155,13 +155,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                       
                       final user = await AuthService.verifyOTP(_userEmail!, code);
                       if (user != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Email verified successfully!'),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                        Navigator.pushReplacementNamed(context, '/profile');
+                        Navigator.pushReplacementNamed(context, '/verification-complete');
                       }
                     } catch (e) {
                       print('EmailVerification: Error: $e');

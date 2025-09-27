@@ -38,6 +38,9 @@ dependencies:
   
   # Supabase dependencies
   supabase_flutter: ^2.8.0
+  
+  # Camera
+  camera: ^0.10.6
 
 dev_dependencies:
   flutter_test:

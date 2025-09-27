@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/auth_service.dart';
+import '../services/permission_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -122,8 +124,9 @@ class _LoginPageState extends State<LoginPage> {
                       print('Login result: ${user?.email ?? 'null'}');
                       
                       if (user != null) {
-                        print('Login successful, navigating to profile');
-                        Navigator.pushReplacementNamed(context, '/profile');
+                        print('Login successful, checking camera permission');
+                        final nextRoute = await PermissionService.getNextRoute();
+                        Navigator.pushReplacementNamed(context, nextRoute);
                       } else {
                         print('Login returned null user');
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -169,84 +172,14 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               
-              const SizedBox(height: 40),
-              
-              // Or login with divider
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey[600])),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      '-----Or login with-----',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey[600])),
-                ],
-              ),
-              
               const SizedBox(height: 30),
-              
-              // Google Login Button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    try {
-                      final user = await AuthService.loginWithGoogle();
-                      if (user != null) {
-                        Navigator.pushReplacementNamed(context, '/profile');
-                      }
-                    } catch (e) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(e.toString()),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28), // Pill shape
-                    ),
-                    elevation: 1,
-                    shadowColor: Colors.grey.withOpacity(0.3),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Google icon
-                      Image.network(
-                        'https://developers.google.com/identity/images/g-logo.png',
-                        height: 20,
-                        width: 20,
-                      ),
-                      const SizedBox(width: 12), // Space between icon and text
-                      // Text
-                      const Text(
-                        'Sign in with Google',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               
               const Spacer(flex: 2),
               
               // Forgot Password
               TextButton(
                 onPressed: () {
-                  // Handle forgot password
+                  Navigator.pushNamed(context, '/forgot-password');
                 },
                 child: const Text(
                   'Forgot Password?',
