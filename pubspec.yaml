@@ -41,6 +41,10 @@ dependencies:
   
   # Camera
   camera: ^0.10.6
+  
+  # Image Picker (more reliable than photo_gallery)
+  image_picker: ^1.0.4
+  permission_handler: ^11.0.1
 
 dev_dependencies:
   flutter_test:

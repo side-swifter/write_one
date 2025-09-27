@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class CameraHomePage extends StatefulWidget {
   const CameraHomePage({super.key});
@@ -12,6 +14,7 @@ class _CameraHomePageState extends State<CameraHomePage> {
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   List<CameraDescription> _cameras = [];
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -98,6 +101,110 @@ class _CameraHomePageState extends State<CameraHomePage> {
     }
   }
 
+  Future<void> _openPhotoGallery() async {
+    try {
+      // Check if photo permission is granted
+      final status = await Permission.photos.status;
+      
+      if (status.isGranted) {
+        // Permission already granted, open photo picker directly
+        _pickImageFromGallery();
+      } else {
+        // Request permission
+        final result = await Permission.photos.request();
+        
+        if (result.isGranted) {
+          // Permission granted, open photo picker
+          _pickImageFromGallery();
+        } else {
+          // Permission denied, show message
+          _showPermissionDeniedDialog();
+        }
+      }
+    } catch (e) {
+      print('Error checking photo permission: $e');
+      // Fallback: try to open photo picker anyway
+      _pickImageFromGallery();
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      print('🔍 Attempting to open image picker...');
+      
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      
+      if (image != null) {
+        print('✅ Photo selected successfully: ${image.path}');
+        
+        // Show success feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo selected from gallery!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 1),
+          ),
+        );
+        
+        // TODO: Handle the selected photo (e.g., display it, process it, etc.)
+      } else {
+        print('❌ No photo selected (user cancelled)');
+      }
+    } catch (e) {
+      print('❌ Error picking image: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error selecting photo: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _showPermissionDeniedDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2D2D2D),
+        title: const Text(
+          'Photo Permission Required',
+          style: TextStyle(color: Colors.white),
+        ),
+        content: const Text(
+          'Photo access is needed to select images from your gallery. Please allow photo permission.',
+          style: TextStyle(color: Colors.grey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              // Try to request permission again
+              _openPhotoGallery();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFBEFF00),
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Try Again'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -132,60 +239,9 @@ class _CameraHomePageState extends State<CameraHomePage> {
               ),
             ),
 
-          // Top Controls
+          // Camera Controls (Moved Higher)
           Positioned(
-            top: 50,
-            left: 20,
-            right: 20,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Gallery Button
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      // TODO: Open gallery
-                    },
-                    icon: const Icon(
-                      Icons.photo_library,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ),
-                
-                // Settings Button
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: IconButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/settings');
-                    },
-                    icon: const Icon(
-                      Icons.settings,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Bottom Controls
-          Positioned(
-            bottom: 50,
+            bottom: 150,
             left: 0,
             right: 0,
             child: Row(
@@ -200,9 +256,7 @@ class _CameraHomePageState extends State<CameraHomePage> {
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: IconButton(
-                    onPressed: () {
-                      // TODO: Open gallery
-                    },
+                    onPressed: _openPhotoGallery,
                     icon: const Icon(
                       Icons.photo,
                       color: Colors.white,
@@ -256,50 +310,81 @@ class _CameraHomePageState extends State<CameraHomePage> {
             ),
           ),
 
-          // Bottom Navigation Bar
+          // Bottom Navigation Bar (Pill Shape)
           Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
+            bottom: 30,
+            left: 20,
+            right: 20,
             child: Container(
-              height: 80,
-              color: Colors.black.withOpacity(0.8),
+              height: 70,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(35), // Pill shape
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   // Home
-                  IconButton(
-                    onPressed: () {
-                      // Already on home
-                    },
-                    icon: const Icon(
-                      Icons.home,
-                      color: Colors.white,
-                      size: 30,
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/');
+                      },
+                      icon: const Icon(
+                        Icons.home,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
                   
-                  // Camera
-                  IconButton(
-                    onPressed: () {
-                      // Already on camera
-                    },
-                    icon: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 30,
+                  // Camera (Active State)
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        // Already on camera
+                      },
+                      icon: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
                   
                   // Settings
-                  IconButton(
-                    onPressed: () {
-                      Navigator.pushNamed(context, '/settings');
-                    },
-                    icon: const Icon(
-                      Icons.settings,
-                      color: Colors.white,
-                      size: 30,
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/settings');
+                      },
+                      icon: const Icon(
+                        Icons.settings,
+                        color: Colors.white,
+                        size: 28,
+                      ),
                     ),
                   ),
                 ],
