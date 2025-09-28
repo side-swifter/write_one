@@ -8,10 +8,12 @@ import './text_analysis_page.dart';
 
 class ImageAnalysisPage extends StatefulWidget {
   final String imagePath;
+  final String source; // 'shutter' or 'gallery'
   
   const ImageAnalysisPage({
     super.key,
     required this.imagePath,
+    required this.source,
   });
 
   @override
@@ -147,6 +149,7 @@ class _ImageAnalysisPageState extends State<ImageAnalysisPage>
           confidence: _ocrConfidence,
           imagePath: widget.imagePath,
           analysisResults: _analysisResults,
+          source: widget.source,
         ),
       ),
     );

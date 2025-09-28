@@ -22,6 +22,7 @@ class TextAnalysisPage extends StatefulWidget {
   final double confidence;
   final String imagePath;
   final Map<String, dynamic>? analysisResults;
+  final String source; // 'shutter' or 'gallery'
 
   const TextAnalysisPage({
     super.key,
@@ -29,6 +30,7 @@ class TextAnalysisPage extends StatefulWidget {
     required this.confidence,
     required this.imagePath,
     this.analysisResults,
+    required this.source,
   });
 
   @override
@@ -71,9 +73,10 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
       vsync: this,
     );
     
+    final textToDisplay = _getDisplayText();
     _typewriterAnimation = IntTween(
       begin: 0,
-      end: TextConfig.displayText.length,
+      end: textToDisplay.length,
     ).animate(CurvedAnimation(
       parent: _typewriterController!,
       curve: Curves.easeInOut,
@@ -94,9 +97,10 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
     
     _typewriterAnimation!.addListener(() {
       setState(() {
-        _currentDisplayText = TextConfig.displayText.substring(
+        final textToDisplay = _getDisplayText();
+        _currentDisplayText = textToDisplay.substring(
           0, 
-          _typewriterAnimation!.value.clamp(0, TextConfig.displayText.length)
+          _typewriterAnimation!.value.clamp(0, textToDisplay.length)
         );
       });
     });
@@ -269,16 +273,16 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    '95%',
+                    widget.source == 'shutter' ? '0%' : '95%',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Text(
-                    'AI Generated',
-                    style: TextStyle(
+                  Text(
+                    widget.source == 'shutter' ? 'Text Found' : 'AI Generated',
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
                     ),
@@ -292,10 +296,19 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
     );
   }
 
+  String _getDisplayText() {
+    // If shutter button was used, show error message
+    if (widget.source == 'shutter') {
+      return TextConfig.errorMessage;
+    }
+    // If gallery was used, show mock overview
+    return TextConfig.displayText;
+  }
+
   String _getTitle() {
-    // Always use the configured text for demo purposes
-    final lines = TextConfig.displayText.split('\n');
-    final firstLine = lines.isNotEmpty ? lines[0] : TextConfig.displayText;
+    final textToDisplay = _getDisplayText();
+    final lines = textToDisplay.split('\n');
+    final firstLine = lines.isNotEmpty ? lines[0] : textToDisplay;
     
     if (firstLine.length > 50) {
       return '${firstLine.substring(0, 50)}...';
@@ -306,6 +319,15 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
   List<TextSpan> _buildHighlightedText() {
     // Use the animated text that's being typed out
     final text = _currentDisplayText;
+    
+    // If shutter button was used, don't highlight anything (error message)
+    if (widget.source == 'shutter') {
+      return [TextSpan(
+        text: text,
+        style: const TextStyle(color: Colors.red, fontSize: 18, fontWeight: FontWeight.bold),
+      )];
+    }
+    
     final keyWords = TextConfig.highlightKeywords;
     
     List<TextSpan> spans = [];
@@ -384,18 +406,20 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            '95% AI Generated',
-            style: TextStyle(
+          Text(
+            widget.source == 'shutter' ? 'No Text Found' : '95% AI Generated',
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
-            'This text is most likely to be AI generated, or contain AI Generated Content',
-            style: TextStyle(
+          Text(
+            widget.source == 'shutter' 
+                ? 'No readable text was detected in the captured image'
+                : 'This text is most likely to be AI generated, or contain AI Generated Content',
+            style: const TextStyle(
               color: Colors.grey,
               fontSize: 14,
             ),

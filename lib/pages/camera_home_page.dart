@@ -93,7 +93,10 @@ class _CameraHomePageState extends State<CameraHomePage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ImageAnalysisPage(imagePath: image.path),
+          builder: (context) => ImageAnalysisPage(
+            imagePath: image.path,
+            source: 'shutter',
+          ),
         ),
       );
     } catch (e) {
@@ -150,7 +153,10 @@ class _CameraHomePageState extends State<CameraHomePage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ImageAnalysisPage(imagePath: image.path),
+            builder: (context) => ImageAnalysisPage(
+              imagePath: image.path,
+              source: 'gallery',
+            ),
           ),
         );
       } else {
