@@ -1,8 +1,9 @@
+import 'dart:typed_data';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/database_config.dart';
+import './simple_vision_service.dart';
 
 class MongoService {
   static MongoService? _instance;
@@ -58,16 +59,43 @@ class MongoService {
         return null;
       }
       
+      print('🔍 Starting OCR text extraction...');
+      
+      // Extract text using Google Vision OCR
+      String extractedText = '';
+      double confidence = 0.0;
+      Map<String, dynamic> ocrResults = {};
+      
+      try {
+        final visionService = SimpleVisionService.instance;
+        extractedText = await visionService.extractTextFromImage(file);
+        ocrResults = await visionService.extractStructuredText(file);
+        confidence = ocrResults['confidence'] ?? 0.0;
+        
+        print('✅ OCR completed: ${extractedText.length} chars, ${(confidence * 100).toStringAsFixed(1)}% confidence');
+      } catch (ocrError) {
+        print('⚠️ OCR failed, continuing without text: $ocrError');
+        // Continue saving image even if OCR fails
+      }
+      
       final imageBytes = await file.readAsBytes();
       final fileName = imagePath.split('/').last;
       
-      // Prepare metadata for GridFS
+      // Prepare metadata for GridFS with OCR results
       final fileMetadata = {
         'userId': userId,
         'originalName': fileName,
         'contentType': _getContentType(fileName),
         'uploadedAt': DateTime.now().toIso8601String(),
         'fileSize': imageBytes.length,
+        // OCR Results
+        'extractedText': extractedText,
+        'ocrConfidence': confidence,
+        'hasText': extractedText.isNotEmpty,
+        'textLength': extractedText.length,
+        'ocrBlocks': ocrResults['blocks'] ?? [],
+        'ocrPages': ocrResults['pages'] ?? 0,
+        'ocrProcessedAt': DateTime.now().toIso8601String(),
         ...?metadata,
       };
       
@@ -78,6 +106,8 @@ class MongoService {
       final objectId = await gridIn.save();
       
       print('✅ Image saved to GridFS with ID: $objectId');
+      print('📄 Text extracted: ${extractedText.isEmpty ? "No text found" : "${extractedText.length} characters"}');
+      
       return objectId.toString();
       
     } catch (e) {
@@ -130,10 +160,82 @@ class MongoService {
         'fileSize': image['metadata']['fileSize'],
         'contentType': image['metadata']['contentType'],
         'filename': image['filename'],
+        'extractedText': image['metadata']['extractedText'] ?? '',
+        'hasText': image['metadata']['hasText'] ?? false,
+        'ocrConfidence': image['metadata']['ocrConfidence'] ?? 0.0,
       }).toList();
       
     } catch (e) {
       print('❌ Error getting user images: $e');
+      return [];
+    }
+  }
+  
+  // Search documents by extracted text
+  Future<List<Map<String, dynamic>>> searchDocumentsByText({
+    required String userId,
+    required String searchQuery,
+    double minConfidence = 0.5,
+  }) async {
+    if (!isConnected || _gridFS == null) {
+      print('❌ MongoDB not connected');
+      return [];
+    }
+    
+    try {
+      final filesCollection = _db!.collection('images.files');
+      
+      // Search for documents containing the text with minimum confidence
+      final results = await filesCollection.find(where
+        .eq('metadata.userId', userId)
+        .gte('metadata.ocrConfidence', minConfidence)
+        .match('metadata.extractedText', searchQuery, caseInsensitive: true)
+      ).toList();
+      
+      return results.map((doc) => {
+        'id': doc['_id'].toString(),
+        'originalName': doc['metadata']['originalName'],
+        'extractedText': doc['metadata']['extractedText'],
+        'confidence': doc['metadata']['ocrConfidence'],
+        'uploadedAt': doc['metadata']['uploadedAt'],
+        'textLength': doc['metadata']['textLength'],
+        'hasText': doc['metadata']['hasText'],
+      }).toList();
+      
+    } catch (e) {
+      print('❌ Error searching documents: $e');
+      return [];
+    }
+  }
+  
+  // Get all documents with extracted text for a user
+  Future<List<Map<String, dynamic>>> getUserDocumentsWithText(String userId) async {
+    if (!isConnected || _gridFS == null) {
+      print('❌ MongoDB not connected');
+      return [];
+    }
+    
+    try {
+      final filesCollection = _db!.collection('images.files');
+      
+      // Get all documents with extracted text
+      final results = await filesCollection.find(where
+        .eq('metadata.userId', userId)
+        .eq('metadata.hasText', true)
+      ).toList();
+      
+      return results.map((doc) => {
+        'id': doc['_id'].toString(),
+        'originalName': doc['metadata']['originalName'],
+        'extractedText': doc['metadata']['extractedText'],
+        'confidence': doc['metadata']['ocrConfidence'],
+        'uploadedAt': doc['metadata']['uploadedAt'],
+        'textLength': doc['metadata']['textLength'],
+        'ocrBlocks': doc['metadata']['ocrBlocks'],
+      }).toList();
+      
+    } catch (e) {
+      print('❌ Error getting user documents: $e');
       return [];
     }
   }
@@ -159,5 +261,22 @@ class MongoService {
   String? get currentUserId {
     final user = Supabase.instance.client.auth.currentUser;
     return user?.id;
+  }
+
+  Future<bool> saveDocument(Map<String, dynamic> document) async {
+    if (!isConnected) {
+      print('❌ MongoDB not connected');
+      return false;
+    }
+    
+    try {
+      final collection = _db!.collection('documents');
+      await collection.insertOne(document);
+      print('✅ Document saved to MongoDB');
+      return true;
+    } catch (e) {
+      print('❌ Error saving document: $e');
+      return false;
+    }
   }
 }

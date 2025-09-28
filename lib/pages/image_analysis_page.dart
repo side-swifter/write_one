@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
 import '../services/mongo_service.dart';
+import '../services/simple_vision_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import './text_analysis_page.dart';
 
 class ImageAnalysisPage extends StatefulWidget {
   final String imagePath;
@@ -24,14 +26,17 @@ class _ImageAnalysisPageState extends State<ImageAnalysisPage>
   
   int _currentTextIndex = 0;
   final List<String> _analysisTexts = [
-    'Analyzing...',
-    'Extracting text...',
-    'Checking for AI...',
+    'Connecting to Google Vision...',
+    'Extracting text from image...',
+    'Analyzing document structure...',
+    'Processing OCR results...',
   ];
   
   Timer? _textTimer;
   Timer? _progressTimer;
-  String? _savedImageId;
+  String _extractedText = '';
+  double _ocrConfidence = 0.0;
+  Map<String, dynamic>? _analysisResults;
 
   @override
   void initState() {
@@ -90,34 +95,61 @@ class _ImageAnalysisPageState extends State<ImageAnalysisPage>
       final user = Supabase.instance.client.auth.currentUser;
       final userId = user?.id ?? 'demo_user'; // Fallback for demo
       
-      print('🔄 Saving image to MongoDB for user: $userId');
+      print('🔄 Starting OCR analysis and saving to MongoDB for user: $userId');
       
+      // Perform OCR analysis first
+      final file = File(widget.imagePath);
+      if (await file.exists()) {
+        try {
+          final visionService = SimpleVisionService.instance;
+          
+          // Extract text
+          _extractedText = await visionService.extractTextFromImage(file);
+          
+          // Get structured analysis
+          _analysisResults = await visionService.extractStructuredText(file);
+          _ocrConfidence = _analysisResults?['confidence'] ?? 0.0;
+          
+          print('✅ OCR completed: ${_extractedText.length} chars, ${(_ocrConfidence * 100).toStringAsFixed(1)}% confidence');
+        } catch (ocrError) {
+          print('⚠️ OCR failed: $ocrError');
+          // Continue with saving even if OCR fails
+        }
+      }
+      
+      // Save to MongoDB (this will also perform OCR again, but that's okay for redundancy)
       final imageId = await MongoService.instance.saveImageToGridFS(
         imagePath: widget.imagePath,
         userId: userId,
         metadata: {
           'analysisStarted': DateTime.now().toIso8601String(),
-          'source': 'camera_capture', // or 'gallery_selection'
+          'source': 'camera_capture',
         },
       );
       
       if (imageId != null) {
-        setState(() {
-          _savedImageId = imageId;
-        });
-        print('✅ Image saved to MongoDB with ID: $imageId');
+        print('✅ Image and OCR results saved to MongoDB with ID: $imageId');
       } else {
         print('❌ Failed to save image to MongoDB');
       }
     } catch (e) {
-      print('❌ Error saving image to MongoDB: $e');
+      print('❌ Error in analysis and save process: $e');
     }
   }
 
   void _completeAnalysis() {
-    // TODO: Navigate to results page
-    // For now, just go back
-    Navigator.pop(context);
+    // Navigate to text analysis page with OCR results
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TextAnalysisPage(
+          extractedText: _extractedText,
+          confidence: _ocrConfidence,
+          imagePath: widget.imagePath,
+          analysisResults: _analysisResults,
+        ),
+      ),
+    );
   }
 
   void _cancelAnalysis() {

@@ -331,7 +331,7 @@ class _CameraHomePageState extends State<CameraHomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Home
+                  // Documents
                   Container(
                     width: 50,
                     height: 50,
@@ -344,19 +344,19 @@ class _CameraHomePageState extends State<CameraHomePage> {
                         Navigator.pushReplacementNamed(context, '/documents');
                       },
                       icon: const Icon(
-                        Icons.home,
+                        Icons.description,
                         color: Colors.white,
                         size: 28,
                       ),
                     ),
                   ),
                   
-                  // Camera (Active State)
+                  // Camera (Current - Active State)
                   Container(
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.grey[700],
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: IconButton(

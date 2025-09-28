@@ -75,18 +75,11 @@ class _BootScreenState extends State<BootScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // App Logo
-            Container(
+            Image.asset(
+              'assets/images/Loading one.png',
               width: 120,
               height: 120,
-              decoration: BoxDecoration(
-                color: const Color(0xFFBEFF00),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.edit_document,
-                size: 60,
-                color: Colors.black,
-              ),
+              fit: BoxFit.contain,
             ),
             
             const SizedBox(height: 40),

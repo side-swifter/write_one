@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/permission_service.dart';
 
 class VerificationCompletePage extends StatelessWidget {
   const VerificationCompletePage({super.key});

@@ -137,15 +137,15 @@ class _DocumentsPageState extends State<DocumentsPage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  // Home Icon (Current)
+                  // Documents Icon (Current - Active State)
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[800],
+                      color: Colors.grey[700],
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Icon(
-                      Icons.home,
+                      Icons.description,
                       color: Colors.white,
                       size: 30,
                     ),
@@ -158,10 +158,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                       child: const Icon(
                         Icons.camera_alt,
                         color: Colors.white,
@@ -177,10 +173,6 @@ class _DocumentsPageState extends State<DocumentsPage> {
                     },
                     child: Container(
                       padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
                       child: const Icon(
                         Icons.settings,
                         color: Colors.white,
@@ -318,6 +310,9 @@ class _DocumentsPageState extends State<DocumentsPage> {
         final document = _userDocuments[index];
         final aiPercentage = document['aiPercentage'] as int;
         final documentName = document['originalName'] ?? 'Document ${index + 1}';
+        final extractedText = document['extractedText'] ?? '';
+        final hasText = document['hasText'] ?? false;
+        final ocrConfidence = document['ocrConfidence'] ?? 0.0;
         
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
@@ -326,50 +321,106 @@ class _DocumentsPageState extends State<DocumentsPage> {
             color: Colors.grey[900],
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Document Name
-              Expanded(
-                child: Text(
-                  documentName.replaceAll('.jpg', '').replaceAll('.png', ''),
+              Row(
+                children: [
+                  // Document Name
+                  Expanded(
+                    child: Text(
+                      documentName.replaceAll('.jpg', '').replaceAll('.png', ''),
+                      style: const TextStyle(
+                        fontFamily: 'Migra',
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  
+                  // OCR Status Badge
+                  if (hasText)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      margin: const EdgeInsets.only(right: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFBEFF00).withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '${(ocrConfidence * 100).toStringAsFixed(0)}% OCR',
+                        style: const TextStyle(
+                          color: Color(0xFFBEFF00),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  
+                  // AI Percentage
+                  Text(
+                    '${aiPercentage}% AI',
+                    style: TextStyle(
+                      fontFamily: 'Migra',
+                      color: _getAIPercentageColor(aiPercentage),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              
+              // Text Preview
+              if (hasText && extractedText.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  extractedText.length > 80 
+                    ? '${extractedText.substring(0, 80)}...'
+                    : extractedText,
                   style: const TextStyle(
-                    fontFamily: 'Migra',
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              
-              // AI Percentage
-              Text(
-                '${aiPercentage}% AI',
-                style: TextStyle(
-                  fontFamily: 'Migra',
-                  color: _getAIPercentageColor(aiPercentage),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // View Button
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFBEFF00),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  'View',
-                  style: TextStyle(
-                    fontFamily: 'Migra',
-                    color: Colors.black,
+                    color: Colors.grey,
                     fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+              ] else if (!hasText) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'No text detected in this image',
+                  style: TextStyle(
+                    color: Colors.grey,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
                   ),
                 ),
+                const SizedBox(height: 8),
+              ],
+              
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  // View Button
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFBEFF00),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'View',
+                      style: TextStyle(
+                        fontFamily: 'Migra',
+                        color: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
