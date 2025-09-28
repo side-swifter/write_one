@@ -1,7 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import '../config/google_cloud_config.dart';
 
 class SimpleVisionService {
   static SimpleVisionService? _instance;
@@ -20,48 +17,20 @@ class SimpleVisionService {
         throw Exception('Image file does not exist');
       }
 
-      // Read image as base64
+      // Read image info for logging
       final imageBytes = await imageFile.readAsBytes();
-      final base64Image = base64Encode(imageBytes);
 
       print('📸 Processing image: ${imageFile.path} (${(imageBytes.length / 1024).toStringAsFixed(1)} KB)');
 
-      // Create request body
-      final requestBody = {
-        'requests': [
-          {
-            'image': {
-              'content': base64Image,
-            },
-            'features': [
-              {
-                'type': 'TEXT_DETECTION',
-                'maxResults': 1,
-              }
-            ]
-          }
-        ]
-      };
-
-      // Make API call (but ignore the response and return demo text)
-      final url = 'https://vision.googleapis.com/v1/images:annotate?key=${GoogleCloudConfig.apiKey}';
+      // Skip API call completely - just use demo text
+      print('🔍 Simulating OCR processing...');
       
-      print('🔍 Sending request to Google Vision API...');
+      // Simulate processing time
+      await Future.delayed(const Duration(seconds: 1));
       
-      try {
-        final response = await http.post(
-          Uri.parse(url),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: jsonEncode(requestBody),
-        );
-        print('📡 API call completed with status: ${response.statusCode}');
-      } catch (apiError) {
-        print('⚠️ API call failed: $apiError (continuing with demo text)');
-      }
+      print('📡 OCR simulation completed successfully');
 
-      // Always return the demo text regardless of API response
+      // Return the demo text (same as what's displayed in the UI)
       const demoText = '''The Environmental Paradox of AI
 The expansion of Artificial Intelligence (AI) creates a complex environmental paradox. Its development, especially the intensive training of deep learning models, demands enormous energy consumption by vast data centers, directly contributing to a significant carbon footprint. This challenge puts pressure on decarbonization efforts. However, AI simultaneously offers powerful solutions. It can optimize smart grids for cleaner energy use, enhance resource management, and create sophisticated models for climate change mitigation and tracking biodiversity. Ultimately, AI's future role in sustainability depends critically on industry's adoption of green computing and the development of energy-efficient algorithms to balance technological progress with ecological responsibility.''';
       

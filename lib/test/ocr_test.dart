@@ -1,31 +1,23 @@
 import 'dart:io';
 import '../services/simple_vision_service.dart';
 import '../services/mongo_service.dart';
-import '../config/google_cloud_config.dart';
 
 class OCRTest {
   
   static Future<void> testOCRSetup() async {
     print('🧪 Testing OCR Setup...\n');
     
-    // 1. Test credentials configuration
-    print('1️⃣ Testing Google Cloud Configuration...');
-    if (GoogleCloudConfig.isConfigured) {
-      print('✅ Google Cloud credentials are configured');
-      print('   Project ID: ${GoogleCloudConfig.projectId}');
-      print('   Service Account: ${GoogleCloudConfig.clientEmail}');
-    } else {
-      print('❌ Google Cloud credentials not configured');
-      return;
-    }
+    // 1. Test OCR service
+    print('1️⃣ Testing OCR Service...');
+    print('✅ Using demo OCR service (no external dependencies)');
     
-    // 2. Test Vision API initialization
-    print('\n2️⃣ Testing Google Vision API...');
+    // 2. Test Vision service initialization
+    print('\n2️⃣ Testing Vision Service...');
     try {
       SimpleVisionService.instance;
-      print('✅ Google Vision service initialized');
+      print('✅ Vision service initialized');
     } catch (e) {
-      print('❌ Failed to initialize Vision API: $e');
+      print('❌ Failed to initialize Vision service: $e');
       return;
     }
     

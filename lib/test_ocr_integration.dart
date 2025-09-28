@@ -1,21 +1,14 @@
 import 'dart:io';
 import '../services/simple_vision_service.dart';
 import '../services/mongo_service.dart';
-import '../config/google_cloud_config.dart';
 
 // Simple test function to verify OCR integration
 Future<void> testOCRIntegration() async {
   print('🧪 Testing OCR Integration...\n');
   
-  // 1. Test Google Cloud Configuration
-  print('1️⃣ Checking Google Cloud Configuration...');
-  if (GoogleCloudConfig.isConfigured) {
-    print('✅ Google Cloud credentials configured');
-    print('   Project: ${GoogleCloudConfig.projectId}');
-  } else {
-    print('❌ Google Cloud credentials not configured');
-    return;
-  }
+  // 1. Test OCR Configuration
+  print('1️⃣ Checking OCR Configuration...');
+  print('✅ Demo OCR service configured (no external dependencies)');
   
   // 2. Test Vision Service Initialization
   print('\n2️⃣ Testing Vision Service...');

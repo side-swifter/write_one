@@ -1,6 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:math' as math;
+
+// 🎯 EASY EDIT SECTION - Change these to customize your text and highlighting
+class TextConfig {
+  // Main text to display (edit this to change the content)
+  static const String displayText = '''The Environmental Paradox of AI
+The expansion of Artificial Intelligence (AI) creates a complex environmental paradox. Its development, especially the intensive training of deep learning models, demands enormous energy consumption by vast data centers, directly contributing to a significant carbon footprint. This challenge puts pressure on decarbonization efforts. However, AI simultaneously offers powerful solutions. It can optimize smart grids for cleaner energy use, enhance resource management, and create sophisticated models for climate change mitigation and tracking biodiversity. Ultimately, AI's future role in sustainability depends critically on industry's adoption of green computing and the development of energy-efficient algorithms to balance technological progress with ecological responsibility.''';
+  
+  // Keywords to highlight in green (add/remove words here)
+  static const List<String> highlightKeywords = [
+    'The expansion of Artificial Intelligence (AI) creates a complex environmental paradox. Its development, especially the intensive training of deep learning models, demands enormous energy consumption by vast data centers, directly contributing to a significant carbon footprint. This challenge puts pressure on decarbonization efforts.',
+    'and create sophisticated models for climate change mitigation and tracking biodiversity. Ultimately, AI\'s future role in sustainability depends critically on industry\'s adoption of green computing and the development of energy-efficient algorithms to balance technological progress'
+  ];
+  
+  // Error message when no text is found
+  static const String errorMessage = 'ERROR NO TEXT IN IMAGE, PLEASE TRY AGAIN';
+}
 
 class TextAnalysisPage extends StatefulWidget {
   final String extractedText;
@@ -20,7 +35,100 @@ class TextAnalysisPage extends StatefulWidget {
   State<TextAnalysisPage> createState() => _TextAnalysisPageState();
 }
 
-class _TextAnalysisPageState extends State<TextAnalysisPage> {
+class _TextAnalysisPageState extends State<TextAnalysisPage> 
+    with TickerProviderStateMixin {
+  
+  // Animation controllers
+  AnimationController? _typewriterController;
+  AnimationController? _cursorController;
+  AnimationController? _fadeController;
+  Animation<int>? _typewriterAnimation;
+  Animation<double>? _cursorAnimation;
+  Animation<double>? _fadeAnimation;
+  
+  // Current text being displayed (for typewriter effect)
+  String _currentDisplayText = '';
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize typewriter animation
+    _typewriterController = AnimationController(
+      duration: const Duration(seconds: 4), // 4 seconds to type all text
+      vsync: this,
+    );
+    
+    // Initialize cursor blinking animation
+    _cursorController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    
+    // Initialize fade animation for analysis sections
+    _fadeController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    
+    _typewriterAnimation = IntTween(
+      begin: 0,
+      end: TextConfig.displayText.length,
+    ).animate(CurvedAnimation(
+      parent: _typewriterController!,
+      curve: Curves.easeInOut,
+    ));
+    
+    _cursorAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(_cursorController!);
+    
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController!,
+      curve: Curves.easeInOut,
+    ));
+    
+    _typewriterAnimation!.addListener(() {
+      setState(() {
+        _currentDisplayText = TextConfig.displayText.substring(
+          0, 
+          _typewriterAnimation!.value.clamp(0, TextConfig.displayText.length)
+        );
+      });
+    });
+    
+    // Start cursor blinking immediately
+    _cursorController!.repeat(reverse: true);
+    
+    // Start the typewriter animation after a short delay
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        _typewriterController!.forward().then((_) {
+          // Stop cursor blinking when typing is done
+          _cursorController!.stop();
+        });
+      }
+    });
+    
+    // Start fade animation for analysis sections after 1 second
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        _fadeController!.forward();
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    _typewriterController?.dispose();
+    _cursorController?.dispose();
+    _fadeController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +160,11 @@ class _TextAnalysisPageState extends State<TextAnalysisPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Title - use extracted text or error message
+                  // Title - always use configured text for demo
                   Text(
-                    widget.extractedText.isNotEmpty 
-                      ? _getTitle()
-                      : 'ERROR NO TEXT IN IMAGE, PLEASE TRY AGAIN',
-                    style: TextStyle(
-                      color: widget.extractedText.isNotEmpty ? Colors.white : Colors.red,
+                    _getTitle(),
+                    style: const TextStyle(
+                      color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -90,23 +196,40 @@ class _TextAnalysisPageState extends State<TextAnalysisPage> {
             flex: 2,
             child: Container(
               padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Confidence Indicator
-                  _buildConfidenceIndicator(),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Overall Analysis
-                  _buildOverallAnalysis(),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Analysis Results
-                  Expanded(
-                    child: _buildAnalysisResults(),
-                  ),
-                ],
+              child: FadeTransition(
+                opacity: _fadeAnimation ?? const AlwaysStoppedAnimation(1.0),
+                child: Column(
+                  children: [
+                    // Confidence Indicator (without Analysis text)
+                    _buildConfidenceIndicatorOnly(),
+                    
+                    const SizedBox(height: 30),
+                    
+                    // Analysis text positioned right above Overall Analysis box
+                    const Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        'Analysis',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 5),
+                    
+                    // Overall Analysis
+                    _buildOverallAnalysis(),
+                    
+                    const SizedBox(height: 20),
+                    
+                    // Analysis Results
+                    Expanded(
+                      child: _buildAnalysisResults(),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -115,9 +238,7 @@ class _TextAnalysisPageState extends State<TextAnalysisPage> {
     );
   }
 
-  Widget _buildConfidenceIndicator() {
-    final percentage = (widget.confidence * 100).round();
-    
+  Widget _buildConfidenceIndicatorOnly() {
     return Container(
       height: 120,
       child: Stack(
@@ -137,29 +258,33 @@ class _TextAnalysisPageState extends State<TextAnalysisPage> {
             ),
           ),
           
-          // Analysis text
+          // 95% AI Generated text on the left
           Positioned(
-            right: 0,
-            top: 20,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text(
-                  '$percentage%',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 120,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '95%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const Text(
-                  'Analysis',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
+                  const Text(
+                    'AI Generated',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -168,11 +293,9 @@ class _TextAnalysisPageState extends State<TextAnalysisPage> {
   }
 
   String _getTitle() {
-    if (widget.extractedText.isEmpty) return 'No Text Found';
-    
-    // Get first line or first 50 characters as title
-    final lines = widget.extractedText.split('\n');
-    final firstLine = lines.isNotEmpty ? lines[0] : widget.extractedText;
+    // Always use the configured text for demo purposes
+    final lines = TextConfig.displayText.split('\n');
+    final firstLine = lines.isNotEmpty ? lines[0] : TextConfig.displayText;
     
     if (firstLine.length > 50) {
       return '${firstLine.substring(0, 50)}...';
@@ -181,18 +304,9 @@ class _TextAnalysisPageState extends State<TextAnalysisPage> {
   }
 
   List<TextSpan> _buildHighlightedText() {
-    if (widget.extractedText.isEmpty) {
-      return [
-        const TextSpan(
-          text: 'ERROR NO TEXT IN IMAGE, PLEASE TRY AGAIN',
-          style: TextStyle(color: Colors.red, fontSize: 18),
-        ),
-      ];
-    }
-
-    // Use actual extracted text and highlight some key words
-    final text = widget.extractedText;
-    final keyWords = ['AI', 'artificial intelligence', 'technology', 'digital', 'data', 'algorithm', 'machine learning', 'computer', 'software', 'system'];
+    // Use the animated text that's being typed out
+    final text = _currentDisplayText;
+    final keyWords = TextConfig.highlightKeywords;
     
     List<TextSpan> spans = [];
     String remainingText = text;
@@ -235,6 +349,17 @@ class _TextAnalysisPageState extends State<TextAnalysisPage> {
         ));
         break;
       }
+    }
+    
+    // Add blinking cursor at the end if animation is still running
+    if (_typewriterController?.isAnimating == true) {
+      spans.add(TextSpan(
+        text: '|',
+        style: TextStyle(
+          color: Color(0xFFBEFF00).withValues(alpha: _cursorAnimation?.value ?? 1.0),
+          fontWeight: FontWeight.bold,
+        ),
+      ));
     }
     
     return spans;
