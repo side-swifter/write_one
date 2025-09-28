@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:io';
+import '../services/mongo_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ImageAnalysisPage extends StatefulWidget {
   final String imagePath;
@@ -29,6 +31,7 @@ class _ImageAnalysisPageState extends State<ImageAnalysisPage>
   
   Timer? _textTimer;
   Timer? _progressTimer;
+  String? _savedImageId;
 
   @override
   void initState() {
@@ -60,6 +63,9 @@ class _ImageAnalysisPageState extends State<ImageAnalysisPage>
     // Start progress animation
     _progressController.forward();
     
+    // Start saving image to MongoDB
+    _saveImageToMongo();
+    
     // Cycle through analysis texts every 2 seconds
     _textTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
       if (mounted) {
@@ -76,6 +82,36 @@ class _ImageAnalysisPageState extends State<ImageAnalysisPage>
         _completeAnalysis();
       }
     });
+  }
+  
+  Future<void> _saveImageToMongo() async {
+    try {
+      // Get current user ID from Supabase
+      final user = Supabase.instance.client.auth.currentUser;
+      final userId = user?.id ?? 'demo_user'; // Fallback for demo
+      
+      print('🔄 Saving image to MongoDB for user: $userId');
+      
+      final imageId = await MongoService.instance.saveImageToGridFS(
+        imagePath: widget.imagePath,
+        userId: userId,
+        metadata: {
+          'analysisStarted': DateTime.now().toIso8601String(),
+          'source': 'camera_capture', // or 'gallery_selection'
+        },
+      );
+      
+      if (imageId != null) {
+        setState(() {
+          _savedImageId = imageId;
+        });
+        print('✅ Image saved to MongoDB with ID: $imageId');
+      } else {
+        print('❌ Failed to save image to MongoDB');
+      }
+    } catch (e) {
+      print('❌ Error saving image to MongoDB: $e');
+    }
   }
 
   void _completeAnalysis() {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../services/auth_service.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -14,6 +15,36 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _notifications = true;
   bool _locationTracking = false;
   bool _dataSharing = false;
+  
+  // User data from Supabase
+  String _userName = 'Loading...';
+  String _userEmail = 'Loading...';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() {
+    final user = Supabase.instance.client.auth.currentUser;
+    
+    if (user != null) {
+      setState(() {
+        // Get user name from metadata or email
+        _userName = user.userMetadata?['full_name'] ?? 
+                   user.userMetadata?['name'] ?? 
+                   user.email?.split('@')[0] ?? 
+                   'User';
+        _userEmail = user.email ?? 'No email';
+      });
+    } else {
+      setState(() {
+        _userName = 'Guest User';
+        _userEmail = 'Not logged in';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,24 +87,27 @@ class _SettingsPageState extends State<SettingsPage> {
                   const Text(
                     'Profile',
                     style: TextStyle(
+                      fontFamily: 'Migra',
                       color: Colors.white,
                       fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Alex Johnson',
-                    style: TextStyle(
+                  Text(
+                    _userName,
+                    style: const TextStyle(
+                      fontFamily: 'Migra',
                       color: Colors.white,
                       fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'alex.johnson@example.com',
+                    _userEmail,
                     style: TextStyle(
+                      fontFamily: 'Migra',
                       color: Colors.grey[400],
                       fontSize: 14,
                       decoration: TextDecoration.underline,
@@ -162,7 +196,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 onPressed: () async {
                   try {
                     await AuthService.logout();
-                    Navigator.pushReplacementNamed(context, '/');
+                    // Navigate to home page after logout
+                    Navigator.pushNamedAndRemoveUntil(context, '/home', (route) => false);
                   } catch (e) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(

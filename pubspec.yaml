@@ -45,6 +45,9 @@ dependencies:
   # Image Picker (more reliable than photo_gallery)
   image_picker: ^1.0.4
   permission_handler: ^11.0.1
+  
+  # MongoDB for direct database access
+  mongo_dart: ^0.9.3
 
 dev_dependencies:
   flutter_test:
@@ -56,6 +59,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_native_splash: ^2.4.1
   
   # App icon generator
   flutter_launcher_icons: ^0.14.1
@@ -98,27 +102,28 @@ flutter:
 
 # Flutter Launcher Icons configuration
 flutter_launcher_icons:
-  android: true
+  android: "launcher_icon"
   ios: true
-  image_path_android: "assets/images/write one icon.png"  # fallback for legacy
-  image_path_ios: "assets/images/write one icon.png"      # iOS uses the full icon
-  adaptive_icon_background: "#0a1f29"                     # Your dark blue background
-  adaptive_icon_foreground: "assets/images/icon_fg.png"   # Your logo with transparent bg
-  adaptive_icon_monochrome: "assets/images/icon_mono.png" # For Android 13+ themed icons
-  min_sdk_android: 21
+  image_path: "assets/images/Write One Background Removed.png"
+  min_sdk_android: 21 # android min sdk min:16, default 21
   web:
     generate: true
-    image_path: "assets/images/write one icon.png"
+    image_path: "assets/images/Write One Background Removed.png"
     background_color: "#0a1f29"
     theme_color: "#0a1f29"
   windows:
     generate: true
-    image_path: "assets/images/write one icon.png"
-    icon_size: 48
+    image_path: "assets/images/Write One Background Removed.png"
+    icon_size: 48 # min:48, max:256, default: 48
   macos:
     generate: true
-    image_path: "assets/images/write one icon.png"
+    image_path: "assets/images/Write One Background Removed.png"
 
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/to/font-from-package
+# Native splash screen configuration
+flutter_native_splash:
+  ios: true
+  android: true
+  color: "#0a1f29"  # Dark blue background
+  image: "assets/images/Write One Background Removed.png"
+  color_dark: "#0a1f29"
+  image_dark: "assets/images/Write One Background Removed.png"

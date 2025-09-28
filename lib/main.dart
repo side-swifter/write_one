@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'pages/home_page.dart';
 import 'pages/profile_page.dart';
 import 'pages/settings_page.dart';
@@ -10,16 +9,13 @@ import 'pages/email_verification_page.dart';
 import 'pages/verification_complete_page.dart';
 import 'pages/camera_permission_page.dart';
 import 'pages/camera_home_page.dart';
+import 'pages/documents_page.dart';
+import 'widgets/boot_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Initialize Supabase
-  await Supabase.initialize(
-    url: 'https://jqoptdeozjqzkfizzngm.supabase.co',
-    anonKey: 'sb_secret_qiHUriBNdzNagk0VnJ2_bg_JMUKW3pB',
-  );
-  
+  // Show app immediately - defer heavy initialization
   runApp(const MyApp());
 }
 
@@ -30,6 +26,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'WriteOne',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // Modern theme with beautiful colors and Migra font
         colorScheme: ColorScheme.fromSeed(
@@ -38,28 +35,40 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
         fontFamily: 'Migra', // Set Migra as default font
+        
+        // Customize AppBar theme
         appBarTheme: const AppBarTheme(
-          centerTitle: true,
+          backgroundColor: Colors.transparent,
           elevation: 0,
+          iconTheme: IconThemeData(color: Colors.black),
+          titleTextStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+          ),
         ),
+        
+        // Customize Card theme
         cardTheme: CardThemeData(
-          elevation: 2,
+          elevation: 4,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
         ),
+        
+        // Customize ElevatedButton theme
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
+            elevation: 2,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
           ),
         ),
       ),
-      // Define named routes for navigation
-      initialRoute: '/',
+      home: const BootScreen(), // Use BootScreen for initialization
       routes: {
-        '/': (context) => const HomePage(),
+        '/home': (context) => const HomePage(),
         '/profile': (context) => const ProfilePage(),
         '/settings': (context) => const SettingsPage(),
         '/about': (context) => const AboutPage(),
@@ -69,6 +78,7 @@ class MyApp extends StatelessWidget {
         '/verification-complete': (context) => const VerificationCompletePage(),
         '/camera-permission': (context) => const CameraPermissionPage(),
         '/camera-home': (context) => const CameraHomePage(),
+        '/documents': (context) => const DocumentsPage(),
       },
       // Handle unknown routes
       onUnknownRoute: (settings) {

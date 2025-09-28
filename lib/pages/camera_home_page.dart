@@ -341,7 +341,7 @@ class _CameraHomePageState extends State<CameraHomePage> {
                     ),
                     child: IconButton(
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/');
+                        Navigator.pushReplacementNamed(context, '/documents');
                       },
                       icon: const Icon(
                         Icons.home,

@@ -124,9 +124,9 @@ class _LoginPageState extends State<LoginPage> {
                       print('Login result: ${user?.email ?? 'null'}');
                       
                       if (user != null) {
-                        print('Login successful, checking camera permission');
-                        final nextRoute = await PermissionService.getNextRoute();
-                        Navigator.pushReplacementNamed(context, nextRoute);
+                        print('Login successful, redirecting to documents');
+                        // Navigate to documents page (main app) after successful login
+                        Navigator.pushReplacementNamed(context, '/documents');
                       } else {
                         print('Login returned null user');
                         ScaffoldMessenger.of(context).showSnackBar(

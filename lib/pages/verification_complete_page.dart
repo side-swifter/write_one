@@ -64,9 +64,9 @@ class VerificationCompletePage extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () async {
-                    final nextRoute = await PermissionService.getNextRoute();
-                    Navigator.pushReplacementNamed(context, nextRoute);
+                  onPressed: () {
+                    // Navigate to documents page (main app) after verification
+                    Navigator.pushReplacementNamed(context, '/documents');
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFBEFF00), // Bright green
