@@ -19,7 +19,7 @@ class HomePage extends StatelessWidget {
                 alignment: Alignment.topRight, // Scale from top-right corner
                 child: Image.asset(
                   'assets/images/Hand.png',
-                  height: 250,
+                  height: 245,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -31,29 +31,21 @@ class HomePage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Spacer(flex: 5), // More space at top
+                  const Spacer(flex: 3), // More space at top to position logo lower
                   
                   // Logo, Title, and Subtitle Section
                   Expanded(
-                    flex: 3, // Less space for text section
+                    flex: 5, // More space for logo section
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Write One Text - Centered horizontally
+                        // Write One Logo - Centered horizontally
                         Center(
-                          child: FittedBox(
-                            child: Text(
-                              'Write One',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 64, // Larger font size
-                                fontWeight: FontWeight.w900, // Extra bold
-                                color: Colors.white,
-                                letterSpacing: -2, // Tighter letter spacing
-                                height: 0.9, // Tighter line height
-                              ),
-                            ),
+                          child: Image.asset(
+                            'assets/images/Write One Text.png',
+                            height: 350, // Logo height
+                            fit: BoxFit.contain,
                           ),
                         ),
                         
