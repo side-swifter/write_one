@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import '../services/gemini_service.dart';
 
 // 🎯 EASY EDIT SECTION - Change these to customize your text and highlighting
 class TextConfig {
@@ -50,6 +51,10 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
   
   // Current text being displayed (for typewriter effect)
   String _currentDisplayText = '';
+  
+  // Gemini analysis results
+  GeminiAnalysisResult? _geminiResult;
+  bool _geminiAnalysisComplete = false;
   
   @override
   void initState() {
@@ -124,6 +129,36 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
         _fadeController!.forward();
       }
     });
+    
+    // Start Gemini analysis for gallery images
+    if (widget.source == 'gallery') {
+      _analyzeWithGemini();
+    }
+  }
+  
+  Future<void> _analyzeWithGemini() async {
+    try {
+      print('🤖 Starting Gemini analysis...');
+      final textToAnalyze = _getDisplayText();
+      
+      final result = await GeminiService.instance.analyzeTextForAI(textToAnalyze);
+      
+      if (mounted) {
+        setState(() {
+          _geminiResult = result;
+          _geminiAnalysisComplete = true;
+        });
+        print('✅ Gemini analysis complete: ${result.aiPercentage}% AI-generated');
+      }
+    } catch (e) {
+      print('❌ Gemini analysis failed: $e');
+      if (mounted) {
+        setState(() {
+          _geminiAnalysisComplete = true;
+          // Keep default values if analysis fails
+        });
+      }
+    }
   }
   
   @override
@@ -256,7 +291,7 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
               height: 120,
               child: CustomPaint(
                 painter: SemiCircularProgressPainter(
-                  progress: widget.confidence,
+                  progress: _getProgressValue(),
                 ),
               ),
             ),
@@ -273,7 +308,7 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    widget.source == 'shutter' ? '0%' : '95%',
+                    _getAIPercentageText(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 32,
@@ -316,6 +351,57 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
     return firstLine;
   }
 
+  String _getAIPercentageText() {
+    if (widget.source == 'shutter') {
+      return '0%';
+    }
+    
+    if (_geminiResult != null) {
+      return '${_geminiResult!.aiPercentage.round()}%';
+    }
+    
+    return _geminiAnalysisComplete ? '95%' : '...';
+  }
+
+  String _getOverallAnalysisTitle() {
+    if (widget.source == 'shutter') {
+      return 'No Text Found';
+    }
+    
+    if (_geminiResult != null) {
+      final percentage = _geminiResult!.aiPercentage.round();
+      return '$percentage% AI Generated';
+    }
+    
+    return _geminiAnalysisComplete ? '95% AI Generated' : 'Analyzing...';
+  }
+
+  String _getOverallAnalysisDescription() {
+    if (widget.source == 'shutter') {
+      return 'No readable text was detected in the captured image';
+    }
+    
+    if (_geminiResult != null && _geminiResult!.reasoning.isNotEmpty) {
+      return _geminiResult!.reasoning;
+    }
+    
+    return _geminiAnalysisComplete 
+        ? 'This text is most likely to be AI generated, or contain AI Generated Content'
+        : 'Analyzing text with AI to detect generated content...';
+  }
+
+  double _getProgressValue() {
+    if (widget.source == 'shutter') {
+      return 0.0;
+    }
+    
+    if (_geminiResult != null) {
+      return _geminiResult!.aiPercentage / 100.0;
+    }
+    
+    return _geminiAnalysisComplete ? 0.95 : widget.confidence;
+  }
+
   List<TextSpan> _buildHighlightedText() {
     // Use the animated text that's being typed out
     final text = _currentDisplayText;
@@ -328,8 +414,97 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
       )];
     }
     
-    final keyWords = TextConfig.highlightKeywords;
+    // If Gemini analysis is complete and we have results, use them
+    if (_geminiResult != null && _geminiResult!.aiGeneratedParts.isNotEmpty) {
+      return _buildGeminiHighlightedText(text, _geminiResult!.aiGeneratedParts);
+    }
     
+    // Show analysis in progress or fall back to default highlighting
+    if (!_geminiAnalysisComplete) {
+      // Show text without highlighting while analysis is in progress
+      return [
+        TextSpan(
+          text: text,
+          style: const TextStyle(color: Colors.white),
+        ),
+        if (_typewriterController?.isAnimating == true)
+          TextSpan(
+            text: '|',
+            style: TextStyle(
+              color: Color(0xFFBEFF00).withValues(alpha: _cursorAnimation?.value ?? 1.0),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+      ];
+    }
+    
+    // Fall back to default highlighting if Gemini analysis failed
+    return _buildDefaultHighlightedText(text, TextConfig.highlightKeywords);
+  }
+
+  List<TextSpan> _buildGeminiHighlightedText(String text, List<String> aiParts) {
+    List<TextSpan> spans = [];
+    String remainingText = text;
+    
+    // Sort AI parts by their position in the text to highlight in order
+    List<String> sortedAiParts = List.from(aiParts);
+    sortedAiParts.sort((a, b) {
+      int indexA = text.toLowerCase().indexOf(a.toLowerCase());
+      int indexB = text.toLowerCase().indexOf(b.toLowerCase());
+      return indexA.compareTo(indexB);
+    });
+    
+    for (String aiPart in sortedAiParts) {
+      if (remainingText.isEmpty) break;
+      
+      int index = remainingText.toLowerCase().indexOf(aiPart.toLowerCase());
+      if (index != -1) {
+        // Add text before the AI part
+        if (index > 0) {
+          spans.add(TextSpan(
+            text: remainingText.substring(0, index),
+            style: const TextStyle(color: Colors.white),
+          ));
+        }
+        
+        // Add the highlighted AI part
+        final actualAiPart = remainingText.substring(index, index + aiPart.length);
+        spans.add(TextSpan(
+          text: actualAiPart,
+          style: const TextStyle(
+            color: Color(0xFFBEFF00),
+            backgroundColor: Color(0x33BEFF00), // Subtle background highlight
+            fontWeight: FontWeight.w500,
+          ),
+        ));
+        
+        remainingText = remainingText.substring(index + aiPart.length);
+      }
+    }
+    
+    // Add any remaining text
+    if (remainingText.isNotEmpty) {
+      spans.add(TextSpan(
+        text: remainingText,
+        style: const TextStyle(color: Colors.white),
+      ));
+    }
+    
+    // Add blinking cursor at the end if animation is still running
+    if (_typewriterController?.isAnimating == true) {
+      spans.add(TextSpan(
+        text: '|',
+        style: TextStyle(
+          color: Color(0xFFBEFF00).withValues(alpha: _cursorAnimation?.value ?? 1.0),
+          fontWeight: FontWeight.bold,
+        ),
+      ));
+    }
+    
+    return spans;
+  }
+
+  List<TextSpan> _buildDefaultHighlightedText(String text, List<String> keywords) {
     List<TextSpan> spans = [];
     String remainingText = text;
     
@@ -338,7 +513,7 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
       String foundWord = '';
       
       // Find the earliest occurrence of any keyword
-      for (String keyword in keyWords) {
+      for (String keyword in keywords) {
         int index = remainingText.toLowerCase().indexOf(keyword.toLowerCase());
         if (index != -1 && index < earliestIndex) {
           earliestIndex = index;
@@ -407,7 +582,7 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
           ),
           const SizedBox(height: 8),
           Text(
-            widget.source == 'shutter' ? 'No Text Found' : '95% AI Generated',
+            _getOverallAnalysisTitle(),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -416,9 +591,7 @@ class _TextAnalysisPageState extends State<TextAnalysisPage>
           ),
           const SizedBox(height: 8),
           Text(
-            widget.source == 'shutter' 
-                ? 'No readable text was detected in the captured image'
-                : 'This text is most likely to be AI generated, or contain AI Generated Content',
+            _getOverallAnalysisDescription(),
             style: const TextStyle(
               color: Colors.grey,
               fontSize: 14,
