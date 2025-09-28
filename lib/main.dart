@@ -31,12 +31,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'WriteOne',
       theme: ThemeData(
-        // Modern theme with beautiful colors
+        // Modern theme with beautiful colors and Migra font
         colorScheme: ColorScheme.fromSeed(
           seedColor: Colors.blue,
           brightness: Brightness.light,
         ),
         useMaterial3: true,
+        fontFamily: 'Migra', // Set Migra as default font
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,

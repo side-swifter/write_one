@@ -12,7 +12,7 @@ class HomePage extends StatelessWidget {
           children: [
             // Hand Image positioned at absolute top right of screen
             Positioned(
-              top: -120, // Move much higher up
+              top: -122, // Move much higher up
               right: -100, // Position at right edge
               child: Transform.scale(
                 scale: 2, // Large scale
@@ -31,35 +31,32 @@ class HomePage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Spacer(flex: 3), // More space at top to position logo lower
+                  const Spacer(flex: 4), // Space at top
                   
-                  // Logo, Title, and Subtitle Section
+                  // Logo Section
                   Expanded(
-                    flex: 5, // More space for logo section
+                    flex: 6, // Space for logos
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Write One Logo - Centered horizontally
-                        Center(
+                        // Write One Logo
+                        Flexible(
                           child: Image.asset(
                             'assets/images/Write One Text.png',
-                            height: 350, // Logo height
+                            height: 200, // Reduced height
                             fit: BoxFit.contain,
                           ),
                         ),
                         
-                        const SizedBox(height: 8), // Small gap
+                        const SizedBox(height: 16), // Gap between logos
                         
-                        // Subtitle - Centered
-                        const Text(
-                          'Authenticity at a Glance.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: 0.5,
+                        // Auth at Glance Logo
+                        Flexible(
+                          child: Image.asset(
+                            'assets/images/auth at glance.png',
+                            height: 100, // Smaller height for tagline
+                            fit: BoxFit.contain,
                           ),
                         ),
                       ],
@@ -91,8 +88,9 @@ class HomePage extends StatelessWidget {
                             child: const Text(
                               'Get started',
                               style: TextStyle(
+                                fontFamily: 'Migra',
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w600, // Use Migra Extrabold
                               ),
                             ),
                           ),
@@ -118,8 +116,9 @@ class HomePage extends StatelessWidget {
                             child: const Text(
                               'Login',
                               style: TextStyle(
+                                fontFamily: 'Migra',
                                 fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w600, // Use Migra Extrabold
                               ),
                             ),
                           ),

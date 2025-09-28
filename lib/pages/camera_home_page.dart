@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'image_analysis_page.dart';
 
 class CameraHomePage extends StatefulWidget {
   const CameraHomePage({super.key});
@@ -88,16 +89,21 @@ class _CameraHomePageState extends State<CameraHomePage> {
       final image = await _cameraController!.takePicture();
       print('Picture taken: ${image.path}');
       
-      // Show success feedback
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Photo captured!'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 1),
+      // Navigate to image analysis page
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ImageAnalysisPage(imagePath: image.path),
         ),
       );
     } catch (e) {
       print('Error taking picture: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error taking picture: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -140,16 +146,13 @@ class _CameraHomePageState extends State<CameraHomePage> {
       if (image != null) {
         print('✅ Photo selected successfully: ${image.path}');
         
-        // Show success feedback
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Photo selected from gallery!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 1),
+        // Navigate to image analysis page
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ImageAnalysisPage(imagePath: image.path),
           ),
         );
-        
-        // TODO: Handle the selected photo (e.g., display it, process it, etc.)
       } else {
         print('❌ No photo selected (user cancelled)');
       }
